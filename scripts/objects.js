@@ -18,64 +18,90 @@ function templateToDoList() {
     const menu = document.querySelector('.menu');
     menu.append(block);
 }
-
 templateToDoList()
 
 
-const addButton = document.getElementById('btn-add');
 
-
-
-function renderTask() {
-    const blockThird = document.querySelector('.clear_button');
-    blockThird.insertAdjacentHTML('afterbegin', `
-        <form class="task_body" id="block-second">
-            <input class='task_body-checkbox' type="checkbox" id="checkbox"/>
-            <label class='task_body-label' type="text" id="label" for="checkbox">1.</label>
-            <button class='task_body-btn' id="done">Done</button>
-        </form>
-    `)
-}
+const addBTN = document.querySelector('.task_creator-btn');
 
 
 
 function addTask() {
-    let inputValue = document.getElementById('input-text');
-    let labelTask = document.getElementById('label');
+    const taskCreator = document.querySelector('.task_creator');
+    const taskBody = document.createElement('div');
+    taskBody.classList.add('task_body');
+    taskCreator.after(taskBody);
 
-    labelTask.textContent = inputValue.value
+    const inputValue = document.querySelector('.task_creator-input');
+    taskBody.innerHTML = taskTemplate(inputValue.value);
+
     inputValue.placeholder = 'Next ToDo...';
     inputValue.value = '';
-    crossOutTask()
-    deleteOneEvent()
+
+    crossOutTask();
+    deleteTask();
+    editTask();
+}
+
+
+
+function taskTemplate(task) {
+    return `
+        <form class="task" id="block-second">
+            <input class='task_checkbox' type="checkbox" id="checkbox"/>
+            <label class='task_label' type="text" id="label" for="checkbox">${task}</label>
+            <button class='task_btn-edit'>Edit</button>
+            <button class='task_btn' id="done">Done</button>
+        </form>
+    `
 }
 
 
 
 function crossOutTask() {
-    let checkbox = document.getElementById('checkbox');
-    let label = document.getElementById('label');
+    let checkboxes = document.querySelectorAll('.task_checkbox');
 
-    checkbox.addEventListener('change', (event) => {
-        if (event.currentTarget.checked) {
-            label.style.textDecoration = "line-through";
-        } else {
-            label.style.textDecoration = "none";
-        }
+    checkboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', function () {
+            let label = this.nextElementSibling;
+            if (this.checked) {
+                label.style.textDecoration = "line-through";
+            } else {
+                label.style.textDecoration = "none";
+            }
+        })
     })
 }
 
 
 
-function deleteOneEvent() {
-    const buttonDone = document.getElementById('done');
-    let labelTask = document.getElementById('label');
+function deleteTask() {
+    const doneBTN = document.querySelector('.task_btn');
+    let taskBody = document.querySelector('.task_body');
 
-    buttonDone.addEventListener('click', (event) => {
-        labelTask.textContent = '';
+    doneBTN.addEventListener('click', (event) => {
         event.preventDefault();
+        taskBody.textContent = '';
     })
 }
+
+
+
+function editTask() {
+    let editBTN = document.querySelectorAll('.task_btn-edit');
+
+    editBTN.forEach(editBTN => {
+        let label = editBTN.parentElement.querySelector('.task_label');
+
+        editBTN.addEventListener('click', (event) => {
+            event.preventDefault();
+            if (label.textContent.length > 0) {
+                label.setAttribute('contentEditable', true);
+            }
+        });
+    });
+}
+
 
 
 const btnClear = document.getElementById('btn-clear');
@@ -83,8 +109,7 @@ const btnClear = document.getElementById('btn-clear');
 
 
 function clearAll() {
-    const blockForDelete = document.querySelectorAll('.task_body');
-    console.log(blockForDelete);
+    const blockForDelete = document.querySelectorAll('.task');
     for (let i = 0; i < blockForDelete.length; i++) {
         blockForDelete[i].remove();
     }
@@ -93,33 +118,47 @@ function clearAll() {
 
 
 function pressButtonEnter(event) {
-    if (event.code === "Enter") {
+    if (event.code === "Enter") { //event.keyCode === 13
         console.log('Enter pressed');
+        //addTask();
     }
 }
 
 
 
 function setLocalStorage() {
-    let inputValue = document.getElementById('input-text');
+    let tasks = [];
+    let labelValue = document.querySelectorAll('.task_label');
+    console.log(labelValue);
 
-    localStorage.setItem('toDo', inputValue.value.toString());
+    for (let i = 0; i < labelValue.length; i++) {
+        tasks.push(labelValue[i].innerHTML)
+    }
+    localStorage.setItem('toDo', JSON.stringify(tasks));
 }
 
 
 
 function getLocalStorage() {
-    console.log(localStorage.getItem('toDo'))
+    let tasks = JSON.parse(localStorage.getItem('toDo'));
+    console.log(tasks);
 }
+
+
+window.addEventListener('load', function() {
+    if (localStorage.getItem('toDo')) {
+        getLocalStorage();
+    } else {
+        setLocalStorage();
+        getLocalStorage();
+    }
+})
+
 
 
 
 btnClear.addEventListener('click', clearAll);
 
-addButton.addEventListener('click', renderTask);
-addButton.addEventListener('click', addTask);
-addButton.addEventListener('keydown', pressButtonEnter);
-addButton.addEventListener('keyup', pressButtonEnter);
-
-addButton.addEventListener('click', setLocalStorage);
-addButton.addEventListener('click', getLocalStorage);
+addBTN.addEventListener('click', addTask);
+addBTN.addEventListener('keydown', pressButtonEnter);
+addBTN.addEventListener('click', setLocalStorage);
