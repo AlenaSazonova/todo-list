@@ -49,7 +49,7 @@ function taskTemplate(task) {
     return `
         <form class="task" id="block-second">
             <input class='task_checkbox' type="checkbox" id="checkbox"/>
-            <label class='task_label' type="text" id="label" for="checkbox">${task}</label>
+            <label class='task_label' type="text" id="label">${task}</label>
             <button class='task_btn-edit'>Edit</button>
             <button class='task_btn' id="done">Done</button>
         </form>
@@ -78,7 +78,7 @@ function crossOutTask() {
 function deleteTask() {
     const doneBTN = document.querySelector('.task_btn');
     let taskBody = document.querySelector('.task_body');
-
+    
     doneBTN.addEventListener('click', (event) => {
         event.preventDefault();
         taskBody.textContent = '';
@@ -92,11 +92,18 @@ function editTask() {
 
     editBTN.forEach(editBTN => {
         let label = editBTN.parentElement.querySelector('.task_label');
+        //console.log(label)
 
         editBTN.addEventListener('click', (event) => {
             event.preventDefault();
-            if (label.textContent.length > 0) {
-                label.setAttribute('contentEditable', true);
+            //console.log(event.target)
+            label.setAttribute('contentEditable', true);
+
+            if (editBTN.innerText === 'Save') {
+                editBTN.innerText = "Edit";
+                label.removeAttribute('contentEditable');
+            } else {
+                editBTN.innerText = "Save";
             }
         });
     });
@@ -118,6 +125,7 @@ function clearAll() {
 
 
 function pressButtonEnter(event) {
+    
     if (event.code === "Enter") { //event.keyCode === 13
         console.log('Enter pressed');
         //addTask();
@@ -145,7 +153,7 @@ function getLocalStorage() {
 }
 
 
-window.addEventListener('load', function() {
+window.addEventListener('DOMContentLoaded', function() { 
     if (localStorage.getItem('toDo')) {
         getLocalStorage();
     } else {
